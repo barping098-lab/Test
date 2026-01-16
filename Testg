@@ -1,0 +1,70 @@
+local player = game.Players.LocalPlayer
+local gui = player.PlayerGui:WaitForChild("ScreenGui")  -- Mengakses GUI yang sudah dibuat
+
+-- Tombol untuk Auto Merge dan Auto Buy
+local autoMergeButton = gui:WaitForChild("AutoMergeButton")
+local autoBuyButton = gui:WaitForChild("AutoBuyButton")
+
+local autoMerge = false  -- Status Auto Merge
+local autoBuy = false    -- Status Auto Buy
+local mergeRadius = 10   -- Radius pencarian item yang akan digabungkan
+local buyItemCost = 100  -- Harga item yang akan dibeli
+local buyItemCooldown = 5  -- Waktu tunggu antar pembelian
+
+-- Fungsi untuk Auto Merge
+local function toggleAutoMerge()
+    autoMerge = not autoMerge
+    if autoMerge then
+        autoMergeButton.Text = "Stop Auto Merge"  -- Ubah teks tombol saat aktif
+        print("Auto Merge Aktif")
+        
+        -- Proses penggabungan item setiap 2 detik
+        while autoMerge do
+            for _, item in ipairs(workspace:GetChildren()) do
+                if item:IsA("Part") and item.Name == "MergeableItem" then
+                    -- Gabungkan item dengan karakter
+                    if (item.Position - player.Character.HumanoidRootPart.Position).Magnitude < mergeRadius then
+                        item.Position = player.Character.HumanoidRootPart.Position  -- Pindahkan item ke karakter
+                        item.Anchored = true
+                        print("Menggabungkan item: " .. item.Name)
+                    end
+                end
+            end
+            wait(2)  -- Tunggu beberapa detik sebelum mencoba lagi
+        end
+    else
+        autoMergeButton.Text = "Start Auto Merge"  -- Ubah teks tombol saat nonaktif
+        print("Auto Merge Nonaktif")
+    end
+end
+
+-- Fungsi untuk Auto Buy
+local function toggleAutoBuy()
+    autoBuy = not autoBuy
+    if autoBuy then
+        autoBuyButton.Text = "Stop Auto Buy"  -- Ubah teks tombol saat aktif
+        print("Auto Buy Aktif")
+        
+        -- Proses pembelian item setiap beberapa detik
+        while autoBuy do
+            -- Pastikan pemain memiliki cukup koin
+            if player.leaderstats and player.leaderstats.Coins.Value >= buyItemCost then
+                player.leaderstats.Coins.Value = player.leaderstats.Coins.Value - buyItemCost
+                print("Membeli item!")
+                -- Tambahkan logika pembelian item di sini
+            else
+                print("Koin tidak cukup untuk membeli item!")
+            end
+            wait(buyItemCooldown)  -- Tunggu beberapa detik sebelum membeli lagi
+        end
+    else
+        autoBuyButton.Text = "Start Auto Buy"  -- Ubah teks tombol saat nonaktif
+        print("Auto Buy Nonaktif")
+    end
+end
+
+-- Menambahkan aksi saat tombol Auto Merge diklik
+autoMergeButton.MouseButton1Click:Connect(toggleAutoMerge)
+
+-- Menambahkan aksi saat tombol Auto Buy diklik
+autoBuyButton.MouseButton1Click:Connect(toggleAutoBuy)
