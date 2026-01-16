@@ -1,0 +1,72 @@
+if game placeId == targetPlaceId then
+    -- Jika ID game sesuai, lanjutkan dengan menjalankan skrip
+
+    local player = game.Players.LocalPlayer
+    local gui = player.PlayerGui:WaitForChild("ScreenGui")  -- Mengakses GUI yang sudah dibuat
+    local autoMergeButton = gui:WaitForChild("AutoMergeButton")
+    local autoBuyButton = gui:WaitForChild("AutoBuyButton")
+
+    local autoMerge = false  -- Status Auto Merge
+    local autoBuy = false    -- Status Auto Buy
+    local mergeRadius = 10   -- Radius pencarian item yang akan digabungkan
+    local buyItemCost = 100  -- Harga item yang akan dibeli
+    local buyItemCooldown = 5  -- Waktu tunggu antar pembelian
+
+    -- Daftar item dan harga
+    local itemsToBuy = {
+        {name = "Item1", cost = 100},  -- Item 1 dengan harga 100 koin
+        {name = "Item2", cost = 200},  -- Item 2 dengan harga 200 koin
+        {name = "Item3", cost = 300},  -- Item 3 dengan harga 300 koin
+        {name = "Item4", cost = 500},  -- Item 4 dengan harga 500 koin
+    }
+
+    -- Fungsi untuk Auto Merge
+    local function toggleAutoMerge()
+        autoMerge = not autoMerge
+        if autoMerge then
+            autoMergeButton.Text = "Stop Auto Merge"
+
+            while autoMerge do
+                for _, item in ipairs(workspace:GetChildren()) do
+                    if item:IsA("Part") and item.Name == "MergeableItem" then
+                        if (item.Position - player.Character.HumanoidRootPart.Position).Magnitude < mergeRadius then
+                            item.Position = player.Character.HumanoidRootPart.Position
+                            item.Anchored = true
+                        end
+                    end
+                end
+                wait(2)
+            end
+        else
+            autoMergeButton.Text = "Start Auto Merge"
+        end
+    end
+
+    -- Fungsi untuk Auto Buy
+    local function toggleAutoBuy()
+        autoBuy = not autoBuy
+        if autoBuy then
+            autoBuyButton.Text = "Stop Auto Buy"
+
+            while autoBuy do
+                for _, item in ipairs(itemsToBuy) do
+                    if player.leaderstats and player.leaderstats.Coins.Value >= item.cost then
+                        player.leaderstats.Coins.Value = player.leaderstats.Coins.Value - item.cost
+                    end
+                end
+                wait(buyItemCooldown)
+            end
+        else
+            autoBuyButton.Text = "Start Auto Buy"
+        end
+    end
+
+    -- Menambahkan aksi saat tombol Auto Merge diklik
+    autoMergeButton.MouseButton1Click:Connect(toggleAutoMerge)
+
+    -- Menambahkan aksi saat tombol Auto Buy diklik
+    autoBuyButton.MouseButton1Click:Connect(toggleAutoBuy)
+
+else
+    -- Tidak ada informasi yang dicetak jika Place ID tidak sesuai
+end
